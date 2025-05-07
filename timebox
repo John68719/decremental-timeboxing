@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Decremental Timeboxing</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #121212;
+      color: #e0e0e0;
+      padding: 20px;
+    }
+    .section {
+      background: #1e1e1e;
+      padding: 20px;
+      border-radius: 10px;
+      margin-bottom: 30px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    h2 {
+      margin-top: 0;
+    }
+    input[type="number"] {
+      width: 60px;
+      padding: 5px;
+      border-radius: 5px;
+      border: none;
+      background: #2e2e2e;
+      color: #fff;
+      margin-right: 10px;
+    }
+    button {
+      padding: 10px 15px;
+      background: #2196F3;
+      border: none;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background: #1976D2;
+    }
+    .timer {
+      margin-top: 10px;
+      font-size: 1.2em;
+      font-weight: bold;
+    }
+    .progress-container {
+      background: #333;
+      border-radius: 5px;
+      margin-top: 10px;
+      height: 15px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      background: #4CAF50;
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s ease;
+    }
+    #universal-timer {
+      font-size: 1.5em;
+      color: #90caf9;
+      margin-bottom: 10px;
+    }
+    .link-button {
+      display: block;
+      margin-top: 20px;
+      text-align: center;
+      padding: 10px 20px;
+      background: #FF5722;
+      border-radius: 5px;
+      color: white;
+      font-weight: bold;
+      text-decoration: none;
+    }
+    .link-button:hover {
+      background: #D84315;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="universal-timer">Universal Timer: 00:00:00</div>
+  <button onclick="resetUniversalTimer()">Clear Universal Timer</button>
+
+  <div class="section">
+    <h2>Decrement by 1 Minute</h2>
+    <input type="number" value="10" min="1" />
+    <button onclick="startPattern('linear', 60, this)">Start</button>
+    <div class="timer"></div>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+  </div>
+
+  <div class="section">
+    <h2>Halving Pattern (Minutes)</h2>
+    <input type="number" value="10" min="1" />
+    <button onclick="startPattern('halving', 60, this)">Start</button>
+    <div class="timer"></div>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+  </div>
+
+  <div class="section">
+    <h2>Halving Pattern (Seconds)</h2>
+    <input type="number" value="90" min="1" />
+    <button onclick="startPattern('halving', 1, this)">Start</button>
+    <div class="timer"></div>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+  </div>
+
+  <div class="section">
+    <h2>Decremental Reset (Linear)</h2>
+    <input type="number" value="10" min="1" />
+    <button onclick="startResetPattern('linear-reset', 60, this)">Start</button>
+    <div class="timer"></div>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+  </div>
+
+  <div class="section">
+    <h2>Decremental Reset (Halving)</h2>
+    <input type="number" value="10" min="1" />
+    <button onclick="startResetPattern('halving-reset', 60, this)">Start</button>
+    <div class="timer"></div>
+    <div class="progress-container"><div class="progress-bar"></div></div>
+  </div>
+
+  <!-- Link Button -->
+  <a href="https://alljapanesealltheti.me/timeboxing-trilogy-part-4-decremental-timeboxing/index.html" target="_blank" class="link-button">Go to Timeboxing Trilogy Part 4</a>
+
+  <script>
+    // Universal Timer
+    let universalSeconds = 0;
+    let universalInterval = null;
+
+    function startUniversalTimer() {
+      if (universalInterval) return;
+      universalInterval = setInterval(() => {
+        universalSeconds++;
+        const hrs = Math.floor(universalSeconds / 3600);
+        const mins = Math.floor((universalSeconds % 3600) / 60);
+        const secs = universalSeconds % 60;
+        document.getElementById("universal-timer").textContent =
+          `Universal Timer: ${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+      }, 1000);
+    }
+
+    function resetUniversalTimer() {
+      clearInterval(universalInterval);
+      universalInterval = null;
+      universalSeconds = 0;
+      document.getElementById("universal-timer").textContent = `Universal Timer: 00:00:00`;
+    }
+
+    function generatePattern(start, type) {
+      const pattern = [];
+      let current = start;
+      if (type === 'linear') {
+        while (current >= 1) {
+          pattern.push(current);
+          current -= 1;
+        }
+      } else if (type === 'halving') {
+        while (current >= 1) {
+          pattern.push(current);
+          current = Math.floor(current / 2);
+        }
+      }
+      return pattern;
+    }
+
+    function generateResetPattern(start, type) {
+      const pattern = [];
+      let current = start;
+      if (type === 'linear-reset') {
+        while (current >= 1) {
+          const segment = [];
+          for (let i = current; i >= 1; i--) {
+            segment.push(i);
+          }
+          pattern.push(...segment);
+          current = Math.floor(current / 2);
+        }
+      } else if (type === 'halving-reset') {
+        while (current >= 1) {
+          let temp = current;
+          const segment = [];
+          while (temp >= 1) {
+            segment.push(temp);
+            temp = Math.floor(temp / 2);
+          }
+          pattern.push(...segment);
+          current = Math.floor(current / 2);
+        }
+      }
+      return pattern;
+    }
+
+    function startPattern(type, unit, button) {
+      startUniversalTimer();
+      const input = button.previousElementSibling;
+      const startValue = parseInt(input.value);
+      if (isNaN(startValue) || startValue <= 0) {
+        alert("Please enter a valid starting value.");
+        return;
+      }
+      const pattern = generatePattern(startValue, type);
+      runTimer(pattern, unit, button);
+    }
+
+    function startResetPattern(type, unit, button) {
+      startUniversalTimer();
+      const input = button.previousElementSibling;
+      const startValue = parseInt(input.value);
+      if (isNaN(startValue) || startValue <= 0) {
+        alert("Please enter a valid starting value.");
+        return;
+      }
+      const pattern = generateResetPattern(startValue, type);
+      runTimer(pattern, unit, button);
+    }
+
+    function runTimer(pattern, unit, button) {
+      const display = button.nextElementSibling;
+      const progressContainer = display.nextElementSibling;
+      const progressBar = progressContainer.firstElementChild;
+
+      let index = 0;
+      let localElapsedSeconds = 0;
+      const totalSeconds = pattern.reduce((acc, p) => acc + (p * unit), 0);
+
+      const runStep = () => {
+        if (index >= pattern.length) {
+          display.textContent = "Done!";
+          progressBar.style.width = `100%`;
+          return;
+        }
+
+        let timeLeft = pattern[index] * unit;
+        const duration = timeLeft;
+
+        updateDisplay();
+
+        const interval = setInterval(() => {
+          timeLeft--;
+          updateDisplay();
+
+          if (timeLeft <= 0) {
+            clearInterval(interval);
+            localElapsedSeconds += duration;
+            const percent = ((localElapsedSeconds / totalSeconds) * 100).toFixed(1);
+            progressBar.style.width = `${percent}%`;
+            index++;
+            runStep();
+          }
+        }, 1000);
+
+        function updateDisplay() {
+          const minutes = Math.floor(timeLeft / 60);
+          const seconds = timeLeft % 60;
+          display.textContent = `${minutes}:${seconds.toString().padStart(2, '0')} (${pattern[index]} unit${pattern[index] === 1 ? '' : 's'})`;
+        }
+      };
+
+      progressBar.style.width = '0%';
+      runStep();
+    }
+  </script>
+</body>
+</html>
